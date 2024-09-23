@@ -129,7 +129,7 @@ class InfoPanel(QVBoxLayout):
 
         #layout.addLayout(info_layout)
 class SongLibraryGUI(QMainWindow):
-    def __init__(self, songs):
+    def __init__(self):
         super().__init__()
         self.setWindowTitle("Song Library")
         self.setGeometry(100, 100, 600, 400)
@@ -159,16 +159,12 @@ class SongLibraryGUI(QMainWindow):
     time_of_last_update = 0
 
 
-def run_gui(songs):
+def run_gui():
     app = QApplication([])
-    gui = SongLibraryGUI(songs)
+    gui = SongLibraryGUI()
     gui.show()
     app.exec()
 
 if __name__ == "__main__":
-
-
-
     # Example list of songs
-    song_list = [song.name for song in song_library.songs]
-    run_gui(song_list)
+    run_gui()

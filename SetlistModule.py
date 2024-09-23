@@ -4,7 +4,8 @@ from difflib import SequenceMatcher
 
 
 Genres = []
-with open("genres_library.txt",'r') as f:
+
+with open("SetlistResources/genres_library.txt", 'r') as f:
     Genres = [ line[:-1] for line in f]
 print(Genres)
 
@@ -53,7 +54,7 @@ class Song:
 
 
     def find_pdfs(self, sim_thresh = 0.4, mode = "replace"):
-        fps = get_file_paths("../")
+        fps = get_file_paths("./")
         fps_weights = [
             SequenceMatcher(
                 None, self.name, fp.split("/")[-1]
@@ -170,7 +171,7 @@ class SongLibrary:
 
 song_library = SongLibrary()
 
-def load_from_file(path = "SONG LIBRARY.txt"):
+def load_from_file(path = "SetlistResources/SONG LIBRARY.txt"):
     SL = SongLibrary()
     newsong = None
     with (open(path, 'r') as f):
