@@ -9,10 +9,11 @@ with open("Harvesting/Real_Book_6_Indices.csv", 'r') as f:
 print(len(all_names))
 
 
-slib = SongLibrary(name="HARVESTING SONG NAMES")
+slib = SongLibrary(name="SONG LIBRARY")
 i=0
 for n in all_names:
     i+=1
+    #if i>10: break
     print(f"Processing song {i} out of {len(all_names)} ({round(100*i/len(all_names))}%)")
     slib += Song(n, get_pdfs=True)
 

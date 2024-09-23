@@ -15,6 +15,7 @@ def get_file_paths(directory, ftype="pdf"):
         for filename in filenames:
             if filename[-3:] != ftype: continue
             file_paths.append(os.path.join(dirpath, filename))
+    #for p in file_paths[:10]: print(p)
     return file_paths
 
 def name_cleanup(string):
@@ -53,17 +54,24 @@ class Song:
 
 
 
-    def find_pdfs(self, sim_thresh = 0.4, mode = "replace"):
+    def find_pdfs(self, sim_thresh = 0.6, mode = "replace", recursive = True):
         fps = get_file_paths("./")
         fps_weights = [
             SequenceMatcher(
-                None, self.name, fp.split("/")[-1]
+                None, self.name, name_cleanup(fp.split("/")[-1])
             ).ratio() for fp in fps
         ]
         match_fps = []
         for fp, sim in zip(fps, fps_weights):
-            if sim > sim_thresh: match_fps.append(fp)
-        if mode == "replace": self.pdfs = match_fps
+            if sim > sim_thresh:
+                match_fps.append(fp)
+                #print(f"{self.name} | {round(1000*sim)/10} | {name_cleanup(fp.split('/')[-1])} ")
+        if len(match_fps) == 0:
+            #print("\t\t\tNONE FOUND")
+            self.find_pdfs(sim_thresh=sim_thresh*0.8, mode=mode, recursive=True)
+        if mode == "replace":
+            self.pdfs = match_fps
+            #for p in self.pdfs: print(p)
         elif mode == "append": self.pdfs.append(match_fps)
         return match_fps
 
@@ -126,7 +134,7 @@ class SongLibrary:
         self.name = name
         self.songs = songs
     def save_to_file(self):
-        with open(self.name + ".txt", 'w') as f:
+        with open("SetlistResources/" + self.name + ".txt", 'w') as f:
             header = self.name
             f.write(header + "\n")
             for song in self.songs:
