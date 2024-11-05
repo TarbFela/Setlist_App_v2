@@ -121,7 +121,10 @@ class InfoPanel(QVBoxLayout):
     def open_pdf_button(self, b: str):
         print(b, "BUTTON PRESSED")
         try:
-            os.system(f'open "{b}"')
+            if pathprefix == None:
+                os.system(f'open "{b}"')
+            else:
+                os.system(f'open "{pathprefix+b}"')
         except:
             print("OPEN FAILED")
 
