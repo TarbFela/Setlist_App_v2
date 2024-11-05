@@ -1,41 +1,54 @@
 import os
 import string
 from difflib import SequenceMatcher
+from scratch_string_comp import get_file_paths, fps_searchable, name_cleanup, pdf_fp_cleanup
+from opening_PDF_pages import *
 
+pathprefix = ""
 
 Genres = []
+try:
+    with open("SetlistResources/genres_library.txt", 'r') as f:
+        Genres = [ line[:-1] for line in f]
+    print(Genres)
+except FileNotFoundError:
+    cwd = os.getcwd()
+    pathprefix = cwd + "/Desktop/Setlist_App_v2/"
+    with open(pathprefix+"SetlistResources/genres_library.txt", 'r') as f:
+        Genres = [line[:-1] for line in f]
+    print(Genres)
 
-with open("SetlistResources/genres_library.txt", 'r') as f:
-    Genres = [ line[:-1] for line in f]
-print(Genres)
 
-def get_file_paths(directory, ftype="pdf"):
-    file_paths = []
-    for dirpath, _, filenames in os.walk(directory):
-        for filename in filenames:
-            if filename[-3:] != ftype: continue
-            file_paths.append(os.path.join(dirpath, filename))
-    #for p in file_paths[:10]: print(p)
-    return file_paths
+#sheet music should work like this:
+# You have a song. It is a song.
+# Let's reorganize our whole sheet music organization
+# We have real books
+# We have effendi
+# We have LSJ chord charts
+class SheetMusic:
+    def __init__(self, *argv):
+        if type(argv[0]) == str: #if it's just a filepath to a pdf
+            self.open_method = self.open_pdf
+            self.filepath = argv[0]
+        elif type(argv[0]) == dict: #if it's a page of a pdf
+            self.open_method = self.open_pdf_to_page
+            self.page = None
+    def open(self):
+        self.open_method()
+    def open_pdf(self):
+        print(f"Opening {self.filepath}...")
+        os.system(f'open "{self.filepath}"')
 
-def name_cleanup(string):
-    return string.lower().replace(
-        "_", " "
-    ).replace(
-        "-", " "
-    ).replace(
-        "'", ""
-    ).replace(
-        "!", ""
-    ).replace(
-        "?", ""
-    ).replace(
-        ".", ""
-    ).replace(
-        "'",""
-    ).replace(
-        ",",""
-    )
+    def open_pdf_to_page(self):
+        print("B")
+
+
+
+
+
+
+
+
 class Song:
     def __init__(self, name_string_input, get_pdfs = False):
         name = name_cleanup(name_string_input)
@@ -54,25 +67,28 @@ class Song:
 
 
 
-    def find_pdfs(self, sim_thresh = 0.6, mode = "replace", recursive = True):
-        fps = get_file_paths("./")
+    def find_pdfs(
+            self, sim_thresh = 0.6, mode = "replace", recursive = True, verbose = False,
+    ):
+        fps = get_file_paths("SetlistResources/")
         fps_weights = [
             SequenceMatcher(
-                None, self.name, name_cleanup(fp.split("/")[-1])
+                None, self.name, pdf_fp_cleanup(fp)
             ).ratio() for fp in fps
         ]
         match_fps = []
         for fp, sim in zip(fps, fps_weights):
             if sim > sim_thresh:
                 match_fps.append(fp)
-                #print(f"{self.name} | {round(1000*sim)/10} | {name_cleanup(fp.split('/')[-1])} ")
+                if verbose: print(f"{self.name} | {round(1000*sim)/10} | {pdf_fp_cleanup(fp)}")
         if len(match_fps) == 0:
             #print("\t\t\tNONE FOUND")
             self.find_pdfs(sim_thresh=sim_thresh*0.8, mode=mode, recursive=True)
         if mode == "replace":
             self.pdfs = match_fps
             #for p in self.pdfs: print(p)
-        elif mode == "append": self.pdfs.append(match_fps)
+        elif mode == "append": self.pdfs += match_fps
+
         return match_fps
 
 
@@ -134,7 +150,7 @@ class SongLibrary:
         self.name = name
         self.songs = songs
     def save_to_file(self):
-        with open("SetlistResources/" + self.name + ".txt", 'w') as f:
+        with open(pathprefix+"SetlistResources/" + self.name + ".txt", 'w') as f:
             header = self.name
             f.write(header + "\n")
             for song in self.songs:
@@ -179,7 +195,7 @@ class SongLibrary:
 
 song_library = SongLibrary()
 
-def load_from_file(path = "SetlistResources/SONG LIBRARY.txt"):
+def load_from_file(path = pathprefix+"SetlistResources/SONG LIBRARY.txt"):
     SL = SongLibrary()
     newsong = None
     with (open(path, 'r') as f):
@@ -234,3 +250,6 @@ def load_from_file(path = "SetlistResources/SONG LIBRARY.txt"):
         return SL
 
 
+if __name__ == "__main__":
+    sm = SheetMusic("Happy")
+    sm.open()
